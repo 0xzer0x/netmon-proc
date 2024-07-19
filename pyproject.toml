@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "netmon-proc"
+version = "0.2.0"
+description = "Monitor network traffic of a group of processes"
+authors = ["Youssef Fathy <32334265+0xzer0x@users.noreply.github.com>"]
+readme = "README.md"
+packages = [
+    { include = "netmon_proc/**/*.py" }
+]
+
+[tool.poetry.scripts]
+netmon-proc = 'netmon_proc.main:run'
+
+[tool.poetry.dependencies]
+python = "^3.9"
+typer = "^0.12.3"
+scapy = "^2.5.0"
+psutil = "^6.0.0"
+rich = "^13.7.1"
+yaspin = "^3.0.2"
+
+[tool.poetry.group.dev.dependencies]
+pylint = "^3.2.5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
