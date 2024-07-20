@@ -61,7 +61,7 @@ def main(
     ] = None,
 ):
     OPTS.set_verbose(verbose)
-    OPTS.set_silent(silent or (output_file is not None))
+    OPTS.set_silent(silent)
     OPTS.set_output_format(output_format)
     OPTS.set_output_file(output_file)
     collected = MetricFactory.from_list(metrics)
