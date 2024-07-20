@@ -2,6 +2,7 @@ import time
 
 import psutil
 
+from netmon_proc.cli.logger import Logger, LogLevel
 from netmon_proc.cli.opts import Opts
 from netmon_proc.socket import Socket
 
@@ -13,18 +14,25 @@ class SocketWatcher:
         self._pids: set[int] = pids
         self._interval: float = 0.10
         self._opts: Opts = Opts()
+        self._logger: Logger = Logger()
 
     def start(self):
         while self._opts.running():
-            OPEN_SOCKETS.clear()
             for conn in psutil.net_connections():
                 if conn.raddr and conn.laddr and conn.pid in self._pids:
+                    old_len = len(OPEN_SOCKETS)
                     OPEN_SOCKETS.update(
                         {
                             Socket(conn.laddr.port, conn.raddr.port),
                             Socket(conn.raddr.port, conn.laddr.port),
                         }
                     )
+                    if old_len != len(OPEN_SOCKETS):
+                        self._logger.log(
+                            LogLevel.WARN,
+                            f"New socket (lport: {conn.laddr.port}, rport: {conn.raddr.port})",
+                            True,
+                        )
             time.sleep(self._interval)
 
     def set_interval(self, interval: float):
