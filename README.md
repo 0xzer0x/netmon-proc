@@ -45,7 +45,7 @@ You can install `netmon-proc` using the provided wheel or source distribution fi
 4. Install the package:
 
    ```sh
-   pip install dist/netmon_proc-0.1.0-py3-none-any.whl
+   pip install dist/netmon_proc-0.x.x-py3-none-any.whl
    ```
 
 ## Usage
