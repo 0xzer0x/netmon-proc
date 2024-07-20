@@ -1,37 +1,28 @@
 import signal
-import sys
 import time
+from pathlib import Path
 from threading import Thread
 from typing import List
 
 import typer
-from rich.console import Console
 from typing_extensions import Annotated
 from yaspin.spinners import Spinners
 
 import netmon_proc.utils
 from netmon_proc.cli import Logger, LogLevel, Opts
-from netmon_proc.formatter import Format, MetricsFormatter, MetricsFormatterFactory
+from netmon_proc.cli.utils import output_metrics
+from netmon_proc.formatter import Format
 from netmon_proc.metrics import Metric, MetricFactory, MetricType
 from netmon_proc.sniffer import PacketSniffer
 from netmon_proc.socketwatcher import SocketWatcher
 
 LOGGER: Logger = Logger()
 OPTS: Opts = Opts()
-COLLECTED: Metric = None
 
-run = typer.Typer()
-
-
-def output_metrics(collected: Metric):
-    console: Console = Console()
-    formatter: MetricsFormatter = MetricsFormatterFactory().get_formatter(
-        OPTS.output_format()
-    )
-    console.print(formatter.format(collected))
+run: typer.Typer = typer.Typer()
 
 
-@run.command(help="Network traffic statistics for processes", no_args_is_help=True)
+@run.command(help="Network traffic monitoring for processes", no_args_is_help=True)
 def main(
     processes: Annotated[
         List[str], typer.Argument(help="List of processes to monitor")
@@ -56,12 +47,25 @@ def main(
     ] = [MetricType.rx_bytes],
     output_format: Annotated[
         Format,
-        typer.Option("--output", "-o", help="Output format for collected metrics"),
+        typer.Option(
+            "--output-format", "-o", help="Output format for collected metrics"
+        ),
     ] = Format.table,
+    output_file: Annotated[
+        Path,
+        typer.Option(
+            "--output-file",
+            "-O",
+            help="Write output to file instead of stdout",
+            writable=True,
+        ),
+    ] = None,
 ):
     OPTS.set_verbose(verbose)
-    OPTS.set_silent(silent)
+    OPTS.set_silent(silent or (output_file is not None))
     OPTS.set_output_format(output_format)
+    OPTS.set_output_file(output_file)
+    collected = MetricFactory.from_list(metrics)
 
     def signal_handler(*_):
         OPTS.set_running(False)
@@ -84,8 +88,6 @@ def main(
     if len(pids) == 0:
         LOGGER.log(LogLevel.ERROR, "No PID associated with given names")
         raise typer.Exit(1)
-
-    collected = MetricFactory.from_list(metrics)
 
     socketwatcher = SocketWatcher(pids)
     socketwatcher_thread = Thread(target=socketwatcher.start)

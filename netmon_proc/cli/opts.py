@@ -1,12 +1,15 @@
+from pathlib import Path
+
 from netmon_proc.patterns.singleton import SingletonMeta
 
 
 class Opts(metaclass=SingletonMeta):
     def __init__(self):
-        self._running = True
-        self._verbose = False
-        self._silent = False
-        self._output_format = "table"
+        self._running: bool = True
+        self._verbose: bool = False
+        self._silent: bool = False
+        self._output_format: bool = "table"
+        self._output_file: Path = None
 
     def running(self):
         return self._running
@@ -31,3 +34,9 @@ class Opts(metaclass=SingletonMeta):
 
     def set_output_format(self, output_format: str):
         self._output_format = output_format
+
+    def output_file(self):
+        return self._output_file
+
+    def set_output_file(self, output_file: Path):
+        self._output_file = output_file
