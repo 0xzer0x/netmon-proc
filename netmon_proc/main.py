@@ -11,8 +11,8 @@ from yaspin.spinners import Spinners
 
 import netmon_proc.utils
 from netmon_proc.cli import Logger, LogLevel, Opts
-from netmon_proc.formatter import JsonMetricsFormatter, MetricsFormatter
-from netmon_proc.metrics import Metric, MetricsFactory, MetricType
+from netmon_proc.formatter import Format, MetricsFormatter, MetricsFormatterFactory
+from netmon_proc.metrics import Metric, MetricFactory, MetricType
 from netmon_proc.sniffer import PacketSniffer
 from netmon_proc.socketwatcher import SocketWatcher
 
@@ -23,8 +23,10 @@ COLLECTED: Metric = None
 
 def output_metrics(collected: Metric):
     console: Console = Console()
-    formatter: MetricsFormatter = JsonMetricsFormatter()
-    console.print_json(formatter.format(collected))
+    formatter: MetricsFormatter = MetricsFormatterFactory().get_formatter(
+        OPTS.oformat()
+    )
+    console.print(formatter.format(collected))
 
 
 def main(
@@ -41,17 +43,21 @@ def main(
         bool, typer.Option("--verbose", "-v", help="Verbose output")
     ] = False,
     silent: Annotated[
-        bool, typer.Option("--silent", "-s", help="Show only the collected metrics")
+        bool, typer.Option("--silent", "-s", help="Output only the collected metrics")
     ] = False,
     bpf_filter: Annotated[
-        str, typer.Option("--filter", "-f", help="BPF filter to use")
+        str, typer.Option("--packet-filter", "-p", help="BPF filter to use")
     ] = "",
     metrics: Annotated[
         List[MetricType], typer.Option("--metrics", "-m", help="Metrics to collect")
-    ] = [MetricType.received],
+    ] = [MetricType.rx_bytes],
+    oformat: Annotated[
+        Format, typer.Option("--format", "-f", help="Output format")
+    ] = Format.table,
 ):
     OPTS.set_verbose(verbose)
     OPTS.set_silent(silent)
+    OPTS.set_oformat(oformat)
 
     def signal_handler(*_):
         OPTS.set_running(False)
@@ -75,7 +81,7 @@ def main(
         LOGGER.log(LogLevel.ERROR, "No PID associated with given names")
         raise typer.Exit(1)
 
-    collected = MetricsFactory.from_list(metrics)
+    collected = MetricFactory.from_list(metrics)
 
     socketwatcher = SocketWatcher(pids)
     socketwatcher_thread = Thread(target=socketwatcher.start)
