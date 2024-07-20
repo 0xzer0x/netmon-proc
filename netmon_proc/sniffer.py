@@ -32,6 +32,11 @@ class PacketSniffer:
 
     def start(self):
         try:
+            self._logger.log(
+                LogLevel.INFO,
+                f"Packet filtering expression: {self._bpf_filter}",
+                True,
+            )
             self._logger.log(LogLevel.INFO, "Started sniffing packets", True)
             self._logger.start_spinner(
                 Spinners.dots,

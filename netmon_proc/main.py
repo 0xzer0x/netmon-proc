@@ -20,15 +20,18 @@ LOGGER: Logger = Logger()
 OPTS: Opts = Opts()
 COLLECTED: Metric = None
 
+run = typer.Typer()
+
 
 def output_metrics(collected: Metric):
     console: Console = Console()
     formatter: MetricsFormatter = MetricsFormatterFactory().get_formatter(
-        OPTS.oformat()
+        OPTS.output_format()
     )
     console.print(formatter.format(collected))
 
 
+@run.command(help="Network traffic statistics for processes", no_args_is_help=True)
 def main(
     processes: Annotated[
         List[str], typer.Argument(help="List of processes to monitor")
@@ -46,18 +49,19 @@ def main(
         bool, typer.Option("--silent", "-s", help="Output only the collected metrics")
     ] = False,
     bpf_filter: Annotated[
-        str, typer.Option("--packet-filter", "-p", help="BPF filter to use")
+        str, typer.Option("--filter", "-f", help="Packet filtering expression to apply")
     ] = "",
     metrics: Annotated[
         List[MetricType], typer.Option("--metrics", "-m", help="Metrics to collect")
     ] = [MetricType.rx_bytes],
-    oformat: Annotated[
-        Format, typer.Option("--format", "-f", help="Output format")
+    output_format: Annotated[
+        Format,
+        typer.Option("--output", "-o", help="Output format for collected metrics"),
     ] = Format.table,
 ):
     OPTS.set_verbose(verbose)
     OPTS.set_silent(silent)
-    OPTS.set_oformat(oformat)
+    OPTS.set_output_format(output_format)
 
     def signal_handler(*_):
         OPTS.set_running(False)
@@ -92,7 +96,3 @@ def main(
 
     OPTS.set_running(False)
     output_metrics(collected)
-
-
-def run():
-    typer.run(main)
