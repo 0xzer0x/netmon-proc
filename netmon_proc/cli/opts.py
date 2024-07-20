@@ -6,6 +6,7 @@ class Opts(metaclass=SingletonMeta):
         self._running = True
         self._verbose = False
         self._silent = False
+        self._oformat = "table"
 
     def running(self):
         return self._running
@@ -24,3 +25,9 @@ class Opts(metaclass=SingletonMeta):
 
     def set_silent(self, silent: bool):
         self._silent = silent
+
+    def oformat(self):
+        return self._oformat
+
+    def set_oformat(self, format: str):
+        self._oformat = format

@@ -1,2 +1,5 @@
-from netmon_proc.formatter.jsonformatter import JsonMetricsFormatter
+from netmon_proc.formatter.format import Format
+from netmon_proc.formatter.jsonmetricsformatter import JsonMetricsFormatter
 from netmon_proc.formatter.metricsformatter import MetricsFormatter
+from netmon_proc.formatter.metricsformatterfactory import MetricsFormatterFactory
+from netmon_proc.formatter.tablemetricsformatter import TableMetricsFormatter
