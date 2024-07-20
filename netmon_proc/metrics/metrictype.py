@@ -2,6 +2,10 @@ from enum import Enum
 
 
 class MetricType(str, Enum):
-    transferred = "transferred"
-    received = "received"
-    sent = "sent"
+    bytes = "bytes"
+    rx_bytes = "rx_bytes"
+    tx_bytes = "tx_bytes"
+
+    packets = "packets"
+    rx_packets = "rx_packets"
+    tx_packets = "tx_packets"
