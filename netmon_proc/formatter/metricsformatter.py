@@ -6,5 +6,5 @@ from netmon_proc.metrics.metric import Metric
 class MetricsFormatter(ABC):
 
     @abstractmethod
-    def format(self, metrics: list[Metric]):
+    def format(self, metric: Metric):
         pass
