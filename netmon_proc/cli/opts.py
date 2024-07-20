@@ -1,4 +1,4 @@
-from pathlib import Path
+from typer import FileTextWrite
 
 from netmon_proc.patterns.singleton import SingletonMeta
 
@@ -9,7 +9,7 @@ class Opts(metaclass=SingletonMeta):
         self._verbose: bool = False
         self._silent: bool = False
         self._output_format: bool = "table"
-        self._output_file: Path = None
+        self._output_file: FileTextWrite = None
 
     def running(self):
         return self._running
@@ -38,5 +38,5 @@ class Opts(metaclass=SingletonMeta):
     def output_file(self):
         return self._output_file
 
-    def set_output_file(self, output_file: Path):
+    def set_output_file(self, output_file: FileTextWrite):
         self._output_file = output_file

@@ -1,6 +1,5 @@
 import signal
 import time
-from pathlib import Path
 from threading import Thread
 from typing import List
 
@@ -12,7 +11,7 @@ import netmon_proc.utils
 from netmon_proc.cli import Logger, LogLevel, Opts
 from netmon_proc.cli.utils import output_metrics
 from netmon_proc.formatter import Format
-from netmon_proc.metrics import Metric, MetricFactory, MetricType
+from netmon_proc.metrics import MetricFactory, MetricType
 from netmon_proc.sniffer import PacketSniffer
 from netmon_proc.socketwatcher import SocketWatcher
 
@@ -52,7 +51,7 @@ def main(
         ),
     ] = Format.table,
     output_file: Annotated[
-        Path,
+        typer.FileTextWrite,
         typer.Option(
             "--output-file",
             "-O",

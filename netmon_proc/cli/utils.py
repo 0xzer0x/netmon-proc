@@ -19,8 +19,6 @@ def output_metrics(collected: Metric):
     )
 
     if opts.output_file() is not None:
-        fd = opts.output_file().open("w")
-        fd.write(formatter.format(collected))
-        fd.close()
+        opts.output_file().write(formatter.format(collected))
     else:
         console.print(formatter.format(collected))
