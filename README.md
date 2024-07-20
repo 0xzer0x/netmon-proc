@@ -26,7 +26,7 @@ You can install `netmon-proc` using the provided wheel or source distribution fi
 1. Clone the repository:
 
    ```sh
-   git clone https://github.com/yourusername/netmon-proc.git
+   git clone https://github.com/0xzer0x/netmon-proc.git
    cd netmon-proc
    ```
 
