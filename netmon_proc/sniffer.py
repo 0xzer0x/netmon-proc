@@ -1,5 +1,6 @@
 import typer
 from scapy.error import Scapy_Exception
+from scapy.layers.inet import IP
 from scapy.packet import Packet
 from scapy.sendrecv import sniff
 from yaspin.spinners import Spinners
@@ -8,7 +9,7 @@ from netmon_proc.cli.logger import Logger, LogLevel
 from netmon_proc.cli.opts import Opts
 from netmon_proc.metrics.metric import Metric
 from netmon_proc.socket import Socket
-from netmon_proc.socketwatcher import OPEN_SOCKETS
+from netmon_proc.socketwatcher import OPEN_SOCKETS, OPEN_SOCKETS_LOCK
 
 
 class PacketSniffer:
@@ -19,16 +20,21 @@ class PacketSniffer:
         self._opts: Opts = Opts()
 
     def _process_packet(self, packet: Packet):
-        try:
-            packet_connection = Socket(packet.sport, packet.dport)
-        except (AttributeError, IndexError):
-            pass
-        else:
-            if packet_connection in OPEN_SOCKETS:
-                try:
-                    self._metric += packet
-                except TypeError:
-                    pass
+        capture: bool = False
+        with OPEN_SOCKETS_LOCK:
+            try:
+                capture = (
+                    Socket(packet.sport, packet.dport) in OPEN_SOCKETS
+                    or Socket(packet.dport, packet.sport) in OPEN_SOCKETS
+                )
+            except (AttributeError, IndexError):
+                capture = False
+
+        if capture:
+            try:
+                self._metric += packet
+            except TypeError:
+                pass
 
     def start(self):
         try:
