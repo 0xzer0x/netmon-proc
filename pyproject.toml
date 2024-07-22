@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "netmon-proc"
-version = "0.2.6"
+version = "0.2.7"
 description = "Monitor network traffic of a group of processes"
 authors = ["Youssef Fathy <32334265+0xzer0x@users.noreply.github.com>"]
 readme = "README.md"
