@@ -1,6 +1,6 @@
-from enum import StrEnum
+from enum import Enum
 
 
-class Format(StrEnum):
+class Format(str, Enum):
     json = "json"
     table = "table"
