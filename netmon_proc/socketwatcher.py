@@ -1,3 +1,4 @@
+import sys
 import time
 from threading import Lock
 
@@ -22,13 +23,21 @@ class SocketWatcher:
         while self._opts.running():
             with OPEN_SOCKETS_LOCK:
                 OPEN_SOCKETS.clear()
-                for pid in self._pids:
-                    proc_sockets = {
-                        Socket(conn.laddr.port, conn.raddr.port)
-                        for conn in psutil.Process(pid).net_connections()
-                        if conn.laddr and conn.raddr
-                    }
-                    OPEN_SOCKETS.update(proc_sockets)
+                try:
+                    for pid in self._pids:
+                        proc_sockets = {
+                            Socket(conn.laddr.port, conn.raddr.port)
+                            for conn in psutil.Process(pid).net_connections()
+                            if conn.laddr and conn.raddr
+                        }
+                        OPEN_SOCKETS.update(proc_sockets)
+                except psutil.AccessDenied as exc:
+                    self._logger.log(
+                        LogLevel.ERROR,
+                        "Insufficent permissions to read process connections. Exiting.",
+                        True,
+                    )
+                    sys.exit(1)
             self._logger.log(
                 LogLevel.WARN,
                 f"Open socket: {len(OPEN_SOCKETS)}",

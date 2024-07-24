@@ -59,7 +59,7 @@ class PacketSniffer:
             self._opts.set_running(False)
             self._logger.stop_spinner()
             errormsg: str = (
-                "Insufficient permissions. Root privileges required."
+                "Insufficient permissions to capture traffic. Exiting."
                 if isinstance(exc, PermissionError)
                 else f"Scapy Error: {exc}"
             )
