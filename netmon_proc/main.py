@@ -4,7 +4,7 @@ from threading import Thread
 from typing import List
 
 import typer
-from typing_extensions import Annotated
+from typing_extensions import Annotated, Optional
 from yaspin.spinners import Spinners
 
 import netmon_proc.utils
@@ -51,7 +51,7 @@ def main(
         ),
     ] = Format.table,
     output_file: Annotated[
-        typer.FileTextWrite,
+        Optional[typer.FileTextWrite],
         typer.Option(
             "--output-file",
             "-O",
