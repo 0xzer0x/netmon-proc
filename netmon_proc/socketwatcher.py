@@ -13,25 +13,25 @@ OPEN_SOCKETS_LOCK: Lock = Lock()
 
 
 class SocketWatcher:
-    def __init__(self, pids: set[int]):
+    def __init__(self, pids: set[int]) -> None:
         self._pids: set[int] = pids
         self._interval: float = 0.10
         self._opts: Opts = Opts()
         self._logger: Logger = Logger()
 
-    def start(self):
+    def start(self) -> None:
         while self._opts.running():
             with OPEN_SOCKETS_LOCK:
                 OPEN_SOCKETS.clear()
                 try:
                     for pid in self._pids:
-                        proc_sockets = {
+                        proc_sockets: set[Socket] = {
                             Socket(conn.laddr.port, conn.raddr.port)
                             for conn in psutil.Process(pid).net_connections()
                             if conn.laddr and conn.raddr
                         }
                         OPEN_SOCKETS.update(proc_sockets)
-                except psutil.AccessDenied as exc:
+                except psutil.AccessDenied:
                     self._logger.log(
                         LogLevel.ERROR,
                         "Insufficent permissions to read process connections. Exiting.",
@@ -45,14 +45,14 @@ class SocketWatcher:
             )
             time.sleep(self._interval)
 
-    def set_interval(self, interval: float):
+    def set_interval(self, interval: float) -> None:
         self._interval = interval
 
-    def interval(self):
+    def interval(self) -> float:
         return self._interval
 
-    def set_pids(self, pids: set[int]):
+    def set_pids(self, pids: set[int]) -> None:
         self._pids = pids
 
-    def pids(self):
+    def pids(self) -> set[int]:
         return self._pids

@@ -6,7 +6,7 @@ from netmon_proc.metrics import Metric
 
 
 class TableMetricsFormatter(MetricsFormatter):
-    def _flatten(self, metrics_dict: dict, parent_name: str = ""):
+    def _flatten(self, metrics_dict: dict, parent_name: str = "") -> list:
         flattened = []
         name = metrics_dict.get("name", "")
         full_name = f"{parent_name}/{name}" if parent_name else name
@@ -22,7 +22,7 @@ class TableMetricsFormatter(MetricsFormatter):
 
         return flattened
 
-    def format(self, metric: Metric):
+    def format(self, metric: Metric) -> str:
         metrics_dict = as_dict(metric)
         table = tabulate(self._flatten(metrics_dict), headers="keys", tablefmt="grid")
         return table

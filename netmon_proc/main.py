@@ -11,7 +11,7 @@ import netmon_proc.utils
 from netmon_proc.cli import Logger, LogLevel, Opts
 from netmon_proc.cli.utils import output_metrics
 from netmon_proc.formatter import Format
-from netmon_proc.metrics import MetricFactory, MetricType
+from netmon_proc.metrics import Metric, MetricFactory, MetricType
 from netmon_proc.sniffer import PacketSniffer
 from netmon_proc.socketwatcher import SocketWatcher
 
@@ -64,11 +64,11 @@ def main(
     OPTS.set_silent(silent)
     OPTS.set_output_format(output_format)
     OPTS.set_output_file(output_file)
-    collected = MetricFactory.from_list(metrics)
+    collected: Metric = MetricFactory.from_list(metrics)
 
     def signal_handler(*_):
         OPTS.set_running(False)
-        if collected is not None:
+        if collected:
             output_metrics(collected)
             raise typer.Exit(0)
         raise typer.Exit(1)
@@ -83,16 +83,16 @@ def main(
         time.sleep(delay)
         LOGGER.stop_spinner()
 
-    pids = netmon_proc.utils.find_pids(processes)
+    pids: set[int] = netmon_proc.utils.find_pids(processes)
     if len(pids) == 0:
         LOGGER.log(LogLevel.ERROR, "No PID associated with given names")
         raise typer.Exit(1)
 
-    socketwatcher = SocketWatcher(pids)
-    socketwatcher_thread = Thread(target=socketwatcher.start)
+    socketwatcher: SocketWatcher = SocketWatcher(pids)
+    socketwatcher_thread: Thread = Thread(target=socketwatcher.start)
     socketwatcher_thread.start()
 
-    sniffer = PacketSniffer(bpf_filter, collected)
+    sniffer: PacketSniffer = PacketSniffer(bpf_filter, collected)
     sniffer.start()
 
     OPTS.set_running(False)

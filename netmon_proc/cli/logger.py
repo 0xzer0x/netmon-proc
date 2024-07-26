@@ -2,7 +2,9 @@ import signal
 from enum import IntEnum
 
 from rich.console import Console
+from typing_extensions import Optional
 from yaspin import yaspin
+from yaspin.core import Yaspin
 
 from netmon_proc.cli.opts import Opts
 from netmon_proc.cli.utils import yaspin_terminator
@@ -22,31 +24,32 @@ class LogLevel(IntEnum):
 
 
 class Logger(metaclass=SingletonMeta):
-    def __init__(self):
-        self._opts = Opts()
-        self._rich_console = Console()
-        self._yaspin = None
+    def __init__(self) -> None:
+        self._opts: Opts = Opts()
+        self._rich_console: Console = Console()
+        self._yaspin: Optional[Yaspin] = None
 
-    def start_spinner(self, *args, **kwargs):
+    def start_spinner(self, *args, **kwargs) -> Optional[Yaspin]:
         if self._opts.silent():
-            return
+            return None
         self._yaspin = yaspin(*args, **kwargs, sigmap=YASPIN_SIGMAP)
         self._yaspin.start()
         return self._yaspin
 
-    def stop_spinner(self):
+    def stop_spinner(self) -> None:
         if self._opts.silent():
             return
-        self._yaspin.hide()
-        self._yaspin.stop()
-        self._yaspin = None
+        if self._yaspin:
+            self._yaspin.hide()
+            self._yaspin.stop()
+            self._yaspin = None
 
-    def log(self, level: LogLevel, msg: str, extra: bool = False):
+    def log(self, level: LogLevel, msg: str, extra: bool = False) -> None:
         if self._opts.silent() or (extra and not self._opts.verbose()):
             return
 
-        style = ""
-        symbol = ""
+        style: str = ""
+        symbol: str = ""
         if level == LogLevel.INFO:
             style = "bold cyan"
             symbol = "+"
@@ -60,7 +63,7 @@ class Logger(metaclass=SingletonMeta):
             style = "bold green"
             symbol = "$"
 
-        if self._yaspin is not None:
+        if self._yaspin:
             with self._yaspin.hidden():
                 self._rich_console.print(f"[{style}][{symbol}] {msg}[/{style}]")
         else:
