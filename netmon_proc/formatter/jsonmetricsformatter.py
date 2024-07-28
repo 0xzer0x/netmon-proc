@@ -7,7 +7,7 @@ from netmon_proc.metrics.metric import Metric
 
 
 class JsonMetricsFormatter(MetricsFormatter):
-    def format(self, metric: Metric):
+    def format(self, metric: Metric) -> str:
         io = StringIO()
         json.dump(as_dict(metric), io)
         return io.getvalue()

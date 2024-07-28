@@ -1,6 +1,5 @@
 import typer
 from scapy.error import Scapy_Exception
-from scapy.layers.inet import IP
 from scapy.packet import Packet
 from scapy.sendrecv import sniff
 from yaspin.spinners import Spinners
@@ -8,18 +7,17 @@ from yaspin.spinners import Spinners
 from netmon_proc.cli.logger import Logger, LogLevel
 from netmon_proc.cli.opts import Opts
 from netmon_proc.metrics.metric import Metric
-from netmon_proc.socket import Socket
-from netmon_proc.socketwatcher import OPEN_SOCKETS, OPEN_SOCKETS_LOCK
+from netmon_proc.socketwatcher import OPEN_SOCKETS, OPEN_SOCKETS_LOCK, Socket
 
 
 class PacketSniffer:
-    def __init__(self, bpf_filter: str, metric: Metric):
+    def __init__(self, bpf_filter: str, metric: Metric) -> None:
         self._bpf_filter: str = bpf_filter
         self._metric: Metric = metric
         self._logger: Logger = Logger()
         self._opts: Opts = Opts()
 
-    def _process_packet(self, packet: Packet):
+    def _process_packet(self, packet: Packet) -> None:
         capture: bool = False
         with OPEN_SOCKETS_LOCK:
             try:
@@ -36,7 +34,7 @@ class PacketSniffer:
             except TypeError:
                 pass
 
-    def start(self):
+    def start(self) -> None:
         try:
             self._logger.log(
                 LogLevel.INFO,

@@ -1,7 +1,7 @@
 from netmon_proc.metrics.metric import Metric
 
 
-def is_composite(metric: Metric):
+def is_composite(metric: Metric) -> bool:
     try:
         metric.value()
         return False
@@ -9,7 +9,7 @@ def is_composite(metric: Metric):
         return True
 
 
-def as_dict(metric: Metric):
+def as_dict(metric: Metric) -> dict:
     final: dict = {"name": metric.name()}
     if is_composite(metric):
         final["children"] = []
@@ -22,9 +22,9 @@ def as_dict(metric: Metric):
     return final
 
 
-def bytes_to_hr(num_bytes: int):
+def bytes_to_hr(num_bytes: float) -> tuple[str, str] | tuple[None, None]:
     for unit in ["B", "Ki", "Mi", "Gi", "Ti", "Pi"]:
         if num_bytes < 1024:
             return (f"{num_bytes:.2f}", unit)
         num_bytes /= 1024
-    return None
+    return (None, None)
