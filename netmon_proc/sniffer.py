@@ -7,8 +7,7 @@ from yaspin.spinners import Spinners
 from netmon_proc.cli.logger import Logger, LogLevel
 from netmon_proc.cli.opts import Opts
 from netmon_proc.metrics.metric import Metric
-from netmon_proc.socket import Socket
-from netmon_proc.socketwatcher import OPEN_SOCKETS, OPEN_SOCKETS_LOCK
+from netmon_proc.socketwatcher import OPEN_SOCKETS, OPEN_SOCKETS_LOCK, Socket
 
 
 class PacketSniffer:

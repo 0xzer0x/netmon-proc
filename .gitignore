@@ -1,10 +1,2 @@
-*
-!.git
-!.github
-!netmon_proc
-!tests
-!.gitignore
-!LICENSE
-!poetry.lock
-!pyproject.toml
-!README.md
+__pycache__
+.python-version

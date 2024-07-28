@@ -13,7 +13,7 @@ from netmon_proc.cli.utils import output_metrics
 from netmon_proc.formatter import Format
 from netmon_proc.metrics import Metric, MetricFactory, MetricType
 from netmon_proc.sniffer import PacketSniffer
-from netmon_proc.socketwatcher import SocketWatcher
+from netmon_proc.socketwatcher import PsutilFetchingStrategy, SocketWatcher
 
 LOGGER: Logger = Logger()
 OPTS: Opts = Opts()
@@ -88,7 +88,7 @@ def main(
         LOGGER.log(LogLevel.ERROR, "No PID associated with given names")
         raise typer.Exit(1)
 
-    socketwatcher: SocketWatcher = SocketWatcher(pids)
+    socketwatcher: SocketWatcher = SocketWatcher(pids, PsutilFetchingStrategy())
     socketwatcher_thread: Thread = Thread(target=socketwatcher.start)
     socketwatcher_thread.start()
 

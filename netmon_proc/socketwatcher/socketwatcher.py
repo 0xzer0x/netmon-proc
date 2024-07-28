@@ -2,18 +2,19 @@ import sys
 import time
 from threading import Lock
 
-import psutil
-
 from netmon_proc.cli.logger import Logger, LogLevel
 from netmon_proc.cli.opts import Opts
-from netmon_proc.socket import Socket
+from netmon_proc.socketwatcher.fetchingexception import FetchingException
+from netmon_proc.socketwatcher.fetchingstrategy import FetchingStrategy
+from netmon_proc.socketwatcher.socket import Socket
 
 OPEN_SOCKETS: set[Socket] = set()
 OPEN_SOCKETS_LOCK: Lock = Lock()
 
 
 class SocketWatcher:
-    def __init__(self, pids: set[int]) -> None:
+    def __init__(self, pids: set[int], fetching_strategy: FetchingStrategy) -> None:
+        self._fetching_strategy: FetchingStrategy = fetching_strategy
         self._pids: set[int] = pids
         self._interval: float = 0.10
         self._opts: Opts = Opts()
@@ -25,16 +26,11 @@ class SocketWatcher:
                 OPEN_SOCKETS.clear()
                 try:
                     for pid in self._pids:
-                        proc_sockets: set[Socket] = {
-                            Socket(conn.laddr.port, conn.raddr.port)
-                            for conn in psutil.Process(pid).net_connections()
-                            if conn.laddr and conn.raddr
-                        }
-                        OPEN_SOCKETS.update(proc_sockets)
-                except psutil.AccessDenied:
+                        OPEN_SOCKETS.update(self._fetching_strategy.fetch(pid))
+                except FetchingException as fex:
                     self._logger.log(
                         LogLevel.ERROR,
-                        "Insufficent permissions to read process connections. Exiting.",
+                        f"Error during fetching open sockets: {fex.msg}",
                         True,
                     )
                     sys.exit(1)

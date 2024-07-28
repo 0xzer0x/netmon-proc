@@ -14,8 +14,8 @@ class Socket:
             return False
         return o._src_port == self._src_port and o._dst_port == self._dst_port
 
-    def src_port(self) -> str:
+    def src_port(self) -> int:
         return self._src_port
 
-    def dst_port(self) -> str:
+    def dst_port(self) -> int:
         return self._dst_port
