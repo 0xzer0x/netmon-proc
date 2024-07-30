@@ -1,0 +1,93 @@
+name: Deploy new release
+on:
+  push:
+    tags:
+      - "v*.*.*"
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      pkg_ver: ${{ steps.set_version.outputs.pkg_ver }}
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set package version
+        id: set_version
+        run: echo "pkg_ver=$(grep version pyproject.toml | cut -d'"' -f2)" >> "$GITHUB_OUTPUT"
+
+  pypi:
+    runs-on: ubuntu-latest
+    needs: prepare
+    environment:
+      name: pypi
+      url: https://pypi.org/project/netmon-proc/${{ needs.prepare.outputs.pkg_ver }}
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.x"
+
+      - name: Install poetry
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+
+      - name: Build package
+        run: poetry build
+
+      - name: Publish package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+  dockerhub:
+    name: Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    needs: prepare
+    env:
+      REGISTRY: docker.io
+      IMAGE_NAME: ${{ github.repository }}
+      PKG_VER: ${{ needs.prepare.outputs.pkg_ver }}
+    environment:
+      name: dockerhub
+      url: https://hub.docker.com/r/0xzer0x/netmon-proc/tags?name=${{ needs.prepare.outputs.pkg_ver }}
+    permissions:
+      contents: read
+      attestations: write
+      id-token: write
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: 0xzer0x
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }},${{ env.IMAGE_NAME }}:${{ env.PKG_VER }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
