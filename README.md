@@ -40,7 +40,7 @@ docker pull 0xzer0x/netmon-proc
 2. Run the container:
 
 ```sh
-docker container run -it --pid=host --network=host --cap-add CAP_SYS_PTRACE 0xzer0x/netmon-proc
+docker container run -it --pid=host --network=host --cap-add=CAP_NET_RAW --cap-add=CAP_SYS_PTRACE --security-opt apparmor=unconfined 0xzer0x/netmon-proc
 ```
 
 ### From Source
